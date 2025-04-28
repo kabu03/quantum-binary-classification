@@ -1,0 +1,5 @@
+dataset,backend,predict_time_seconds
+banknote,classical_svm_cpu,0.00118255615234375
+two_moons,classical_svm_cpu,0.002619028091430664
+two_moons,qsvm_statevector,4.044851779937744
+banknote,qsvm_statevector,23.398126125335693
