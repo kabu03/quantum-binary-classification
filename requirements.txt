@@ -1,6 +1,7 @@
 numpy==2.2.5
 pandas==2.2.3
 psutil==7.0.0
-qiskit==2.0.0
+qiskit==1.4.2
+qiskit_ibm_runtime==0.38.0
 qiskit_machine_learning==0.8.2
 scikit_learn==1.6.1

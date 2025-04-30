@@ -2,8 +2,8 @@ from sklearn import svm
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import json
 import time
-from metrics_logger import save_metrics, save_timing
-from data_utils import load_banknote, generate_two_moons, clean_split_scale
+from src.metrics_logger import save_metrics, save_timing
+from src.data_utils import load_banknote, generate_two_moons, clean_split_scale
 
 def search_classical_hparams(X_train, y_train, X_val, y_val):
     """
@@ -48,19 +48,21 @@ def train_classical_svm(X_train, y_train, best_params):
     Trains the SVM model using the best found hyperparameters.
     """
     print("\nTraining final SVM model...")
+    t0 = time.time()
     model = svm.SVC(kernel='rbf', C=best_params['C'], gamma=best_params['gamma'], random_state=42)
     model.fit(X_train, y_train)
+    training_duration = time.time() - t0
     print("Training completed.")
-    return model
+    return model, training_duration
 
 
-def eval_and_log(dataset_name, model, X_test, y_test, backend_name='classical_svm_cpu'):
+def eval_and_log(dataset_name, model, training_duration, X_test, y_test, backend_name='classical_svm_cpu'):
     """
     Evaluates the trained model on the test set and logs metrics and timing.
     """
     t0 = time.time()
     y_pred = model.predict(X_test)
-    duration = time.time() - t0
+    predicting_duration = time.time() - t0
 
     metrics = {
         "dataset": dataset_name,
@@ -75,7 +77,7 @@ def eval_and_log(dataset_name, model, X_test, y_test, backend_name='classical_sv
     print(json.dumps(metrics, indent=2))
 
     save_metrics(metrics, backend_name)
-    save_timing(duration, backend_name, dataset_name)
+    save_timing(training_duration, predicting_duration, backend_name, dataset_name)
 
 
 def run_banknote(backend_name="classical_svm_cpu"):
@@ -90,10 +92,10 @@ def run_banknote(backend_name="classical_svm_cpu"):
     best_params = search_classical_hparams(X_train, y_train, X_val, y_val)
     
     # Train the model with the best hyperparameters
-    model = train_classical_svm(X_train, y_train, best_params)
+    model, training_duration = train_classical_svm(X_train, y_train, best_params)
     
     # Evaluate the model and log metrics
-    eval_and_log("banknote", model, X_test, y_test, backend_name=backend_name)
+    eval_and_log("banknote", model, training_duration, X_test, y_test, backend_name=backend_name)
 
 
 def run_two_moons(backend_name="classical_svm_cpu"):
@@ -108,10 +110,10 @@ def run_two_moons(backend_name="classical_svm_cpu"):
     best_params = search_classical_hparams(X_train, y_train, X_val, y_val)
     
     # Train the model with the best hyperparameters
-    model = train_classical_svm(X_train, y_train, best_params)
+    model, training_duration = train_classical_svm(X_train, y_train, best_params)
     
     # Evaluate the model and log metrics
-    eval_and_log("two_moons", model, X_test, y_test, backend_name=backend_name)
+    eval_and_log("two_moons", model, training_duration, X_test, y_test, backend_name=backend_name)
 
 
 if __name__ == "__main__":

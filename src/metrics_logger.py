@@ -14,7 +14,7 @@ def save_metrics(metrics, backend_name, results_dir='results'):
     with open(file_path, 'w') as f:
         json.dump(metrics, f, indent=4)
 
-def save_timing(duration, backend_name, dataset_name, results_dir='results'):
+def save_timing(training_duration, predicting_duration, backend_name, dataset_name, results_dir='results'):
     """
     Saves timing information to a CSV file.
     """
@@ -26,5 +26,5 @@ def save_timing(duration, backend_name, dataset_name, results_dir='results'):
     with open(timings_path, 'a', newline='') as csvfile:
         writer = csv.writer(csvfile)
         if not file_exists:
-            writer.writerow(['dataset', 'backend', 'predict_time_seconds'])
-        writer.writerow([dataset_name, backend_name, duration])
+            writer.writerow(['dataset', 'backend', 'train_time_seconds', 'predict_time_seconds'])
+        writer.writerow([dataset_name, backend_name, training_duration, predicting_duration])
