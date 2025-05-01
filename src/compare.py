@@ -34,10 +34,27 @@ def pretty_table(rows, headers):
 
 def load_metrics():
     metrics = []   # list of dicts
-    for fn in os.listdir(RESULTS_DIR):
+    print(f"[DEBUG load_metrics] Looking in directory: {RESULTS_DIR}") # Add print
+    if not os.path.exists(RESULTS_DIR):
+        print(f"[DEBUG load_metrics] Directory NOT FOUND: {RESULTS_DIR}")
+        return metrics
+    
+    files_found = os.listdir(RESULTS_DIR)
+    print(f"[DEBUG load_metrics] Files found: {files_found}") # Add print
+
+    for fn in files_found:
         if fn.startswith("metrics_") and fn.endswith(".json"):
-            with open(os.path.join(RESULTS_DIR, fn)) as f:
-                metrics.append(json.load(f) | {"file": fn})
+            file_path = os.path.join(RESULTS_DIR, fn)
+            print(f"[DEBUG load_metrics] Attempting to load: {file_path}") # Add print
+            try:
+                with open(file_path) as f:
+                    data = json.load(f)
+                    metrics.append(data | {"file": fn})
+                    print(f"[DEBUG load_metrics] Successfully loaded {fn}") # Add print
+            except Exception as e:
+                print(f"[DEBUG load_metrics] FAILED to load {fn}: {e}") # Add print for errors
+        # else: # Optional: See skipped files
+        #     print(f"[DEBUG load_metrics] Skipping file: {fn}")
     return metrics
 
 def load_timings():
@@ -75,24 +92,47 @@ def main():
     qmod.run_two_moons(backend_name=quantum_backend_name, skip_hparam_search=True)
 
     # 5) read results and print table
+    print("[DEBUG main] Loading metrics...") # Add print
     metrics = load_metrics()
+    print(f"[DEBUG main] Metrics loaded ({len(metrics)} records): {metrics}") # Add print
+    
+    print("[DEBUG main] Loading timings...") # Add print
     timings = load_timings()
+    print(f"[DEBUG main] Timings loaded: {timings}") # Add print
+
 
     rows   = []
+    print("[DEBUG main] Starting results table loop...") # Add print
     for dset in DATASETS:
-        for variant in ("classical_cpu", quantum_backend_name):
-            record = next(m for m in metrics
-                          if m["dataset"] == dset and m["backend"] == variant)
-            tkey   = (variant, dset)
-            tinfo  = timings.get(tkey, {})
-            rows.append([
-                dset,
-                variant,
-                f"{record['accuracy']:.3f}",
-                f"{record['f1_score']:.3f}",
-                tinfo.get("train_time_seconds", "--"),
-                tinfo.get("predict_time_seconds", "--"),
-            ])
+        for variant in ("classical_svm_cpu", quantum_backend_name):
+            print(f"[DEBUG main] Looking for: dataset='{dset}', backend='{variant}'") # Add print
+            try:
+                # --- Keep using next() for now to reproduce the error ---
+                record = next(m for m in metrics
+                              if m["dataset"] == dset and m["backend"] == variant)
+                print(f"[DEBUG main] Found record: {record}") # Add print
+                # ---
+                tkey   = (variant, dset)
+                tinfo  = timings.get(tkey, {})
+                rows.append([
+                    dset,
+                    variant,
+                    f"{record['accuracy']:.3f}",
+                    f"{record['f1_score']:.3f}",
+                    tinfo.get("train_time_seconds", "--"),
+                    tinfo.get("predict_time_seconds", "--"),
+                ])
+            except StopIteration:
+                 print(f"[ERROR main] StopIteration: Record NOT FOUND for dataset='{dset}', backend='{variant}'") # Add specific error print
+                 # Optional: Re-raise the error if you want the script to stop here
+                 # raise
+                 # Optional: Or append a placeholder row
+                 rows.append([dset, variant, "ERR", "ERR", "--", "--"])
+            except Exception as e:
+                 print(f"[ERROR main] Unexpected error for dataset='{dset}', backend='{variant}': {e}") # Catch other potential errors
+                 rows.append([dset, variant, "ERR", "ERR", "--", "--"])
+
+
     print()
     pretty_table(rows,
         ["Dataset", "Backend", "Acc", "F1", "Train-s", "Pred-s"])

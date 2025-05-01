@@ -8,7 +8,7 @@ from qiskit_machine_learning.state_fidelities import ComputeUncompute
 
 # primitives
 from qiskit_ibm_runtime import QiskitRuntimeService, Session, Sampler as IBMSampler
-from qiskit_aer.primitives import Sampler as AerSampler
+from qiskit_aer.primitives import SamplerV2 as AerSampler
 # Transpiler
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit import transpile
@@ -116,7 +116,10 @@ def make_fidelity_kernel(fmap):
             service = QiskitRuntimeService(channel="ibm_cloud")
             backend = service.backend(BACKEND)  # Assign to outer scope backend
             session = Session(backend=backend)
-            sampler = IBMSampler(mode=session)
+
+            options = {"default_shots": 100} # Example: Use only 100 shots
+            print(f"[INFO] Configuring SamplerV2 with options: {options}")
+            sampler = IBMSampler(mode=session, options=options)
             print(f"[INFO] SamplerV2 initialized successfully for backend {backend.name} via Session.")
 
             # --- Generate Pass Manager for the backend ---
@@ -254,7 +257,7 @@ def eval_and_log(model, training_duration, X_test, y_test, dataset_name, backend
 def run_banknote(backend_name="qsvm_statevector", skip_hparam_search=True):  # Added flag
     print(f"\nProcessing dataset: banknote (skip_hparam_search={skip_hparam_search})")
     df = load_banknote()
-    df = df.sample(n=50, random_state=42)  # Subsample for test quantum run
+    # df = df.sample(n=50, random_state=42)  # Subsample for test quantum run, can comment out
 
     X_train, X_val, X_test, y_train, y_val, y_test = clean_split_scale(df)
 
@@ -283,7 +286,7 @@ def run_banknote(backend_name="qsvm_statevector", skip_hparam_search=True):  # A
 def run_two_moons(backend_name="qsvm_statevector", skip_hparam_search=True):  # Added flag
     print(f"\nProcessing dataset: two_moons (skip_hparam_search={skip_hparam_search})")
     df = generate_two_moons()
-    df = df.sample(n=50, random_state=42)  # Subsample for test quantum run
+    # df = df.sample(n=50, random_state=42)  # Subsample for test quantum run, can comment out
     X_train, X_val, X_test, y_train, y_val, y_test = clean_split_scale(df)
 
     if skip_hparam_search:
