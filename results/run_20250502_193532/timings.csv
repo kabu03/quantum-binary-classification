@@ -1,0 +1,4 @@
+backend,dataset,train_time_seconds,predict_time_seconds
+classical_svm_cpu,banknote,0.0007894039154052734,0.00023674964904785156
+classical_svm_cpu,two_moons,0.001964092254638672,0.0006577968597412109
+qsvm_statevector,banknote,1298.2556598186493,376.39277696609497
