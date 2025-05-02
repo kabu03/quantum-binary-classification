@@ -1,0 +1,3 @@
+Banknote Samples: 200
+Two Moons Samples: 200
+Skip Quantum HParam Search: True

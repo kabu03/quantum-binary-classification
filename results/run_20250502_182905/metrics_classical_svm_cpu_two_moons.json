@@ -1,0 +1,18 @@
+{
+  "dataset": "two_moons",
+  "backend": "classical_svm_cpu",
+  "accuracy": 0.95,
+  "precision": 0.9047619047619048,
+  "recall": 1.0,
+  "f1_score": 0.95,
+  "confusion": [
+    [
+      19,
+      2
+    ],
+    [
+      0,
+      19
+    ]
+  ]
+}

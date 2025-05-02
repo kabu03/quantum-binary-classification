@@ -1,0 +1,18 @@
+{
+  "dataset": "banknote",
+  "backend": "qsvm_qasm",
+  "accuracy": 0.75,
+  "precision": 0.6875,
+  "recall": 0.6875,
+  "f1_score": 0.6875,
+  "confusion": [
+    [
+      19,
+      5
+    ],
+    [
+      5,
+      11
+    ]
+  ]
+}
