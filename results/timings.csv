@@ -1,3 +1,0 @@
-dataset,backend,train_time_seconds,predict_time_seconds
-banknote,classical_svm_cpu,0.002957582473754883,0.0006861686706542969
-two_moons,classical_svm_cpu,0.003860950469970703,0.0025482177734375

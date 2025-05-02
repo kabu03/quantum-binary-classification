@@ -4,7 +4,7 @@ import json
 import time
 from src.metrics_logger import save_metrics, save_timing
 from src.data_utils import load_banknote, generate_two_moons, clean_split_scale
-
+import os
 def search_classical_hparams(X_train, y_train, X_val, y_val):
     """
     Performs a basic grid search over C and gamma values.
@@ -56,17 +56,20 @@ def train_classical_svm(X_train, y_train, best_params):
     return model, training_duration
 
 
-def eval_and_log(dataset_name, model, training_duration, X_test, y_test, backend_name='classical_svm_cpu'):
+def eval_and_log(dataset_name, model, training_duration, X_test, y_test, run_dir):
     """
     Evaluates the trained model on the test set and logs metrics and timing.
     """
+    backend_name = "classical_svm_cpu" # Define the backend name here
+    print(f"[EVAL] Evaluating backend: {backend_name} on dataset: {dataset_name}")
+
     t0 = time.time()
     y_pred = model.predict(X_test)
     predicting_duration = time.time() - t0
 
     metrics = {
         "dataset": dataset_name,
-        "backend": backend_name,
+        "backend": backend_name, # Use the defined variable
         "accuracy": accuracy_score(y_test, y_pred),
         "precision": precision_score(y_test, y_pred),
         "recall": recall_score(y_test, y_pred),
@@ -76,16 +79,17 @@ def eval_and_log(dataset_name, model, training_duration, X_test, y_test, backend
     print("\nFinal Evaluation on Test Set:")
     print(json.dumps(metrics, indent=2))
 
-    save_metrics(metrics, backend_name)
-    save_timing(training_duration, predicting_duration, backend_name, dataset_name)
+    save_metrics(metrics, backend_name, run_dir)
+    save_timing(training_duration, predicting_duration, backend_name, dataset_name, run_dir)
 
 
-def run_banknote(backend_name="classical_svm_cpu"):
-    """
-    Runs the classical SVM pipeline for the Banknote Authentication dataset.
-    """
-    print("\nRunning classical SVM on Banknote Authentication dataset...")
+def run_banknote(num_samples=None, run_dir = None): # Add num_samples argument
+    print("\nProcessing dataset: banknote (classical)")
     df = load_banknote()
+    if num_samples is not None and num_samples < len(df): # Add sampling logic
+        print(f"[INFO] Subsampling banknote dataset to {num_samples} samples.")
+        df = df.sample(n=num_samples, random_state=42)
+
     X_train, X_val, X_test, y_train, y_val, y_test = clean_split_scale(df)
     
     # Perform hyperparameter search
@@ -95,15 +99,16 @@ def run_banknote(backend_name="classical_svm_cpu"):
     model, training_duration = train_classical_svm(X_train, y_train, best_params)
     
     # Evaluate the model and log metrics
-    eval_and_log("banknote", model, training_duration, X_test, y_test, backend_name=backend_name)
+    eval_and_log("banknote", model, training_duration, X_test, y_test, run_dir)
 
 
-def run_two_moons(backend_name="classical_svm_cpu"):
-    """
-    Runs the classical SVM pipeline for the Two Moons dataset.
-    """
-    print("\nRunning classical SVM on Two Moons dataset...")
+def run_two_moons(num_samples=None, run_dir = None): # Add num_samples argument
+    print("\nProcessing dataset: two_moons (classical)")
     df = generate_two_moons()
+    if num_samples is not None and num_samples < len(df): # Add sampling logic
+        print(f"[INFO] Subsampling two_moons dataset to {num_samples} samples.")
+        df = df.sample(n=num_samples, random_state=42)
+
     X_train, X_val, X_test, y_train, y_val, y_test = clean_split_scale(df)
     
     # Perform hyperparameter search
@@ -113,9 +118,11 @@ def run_two_moons(backend_name="classical_svm_cpu"):
     model, training_duration = train_classical_svm(X_train, y_train, best_params)
     
     # Evaluate the model and log metrics
-    eval_and_log("two_moons", model, training_duration, X_test, y_test, backend_name=backend_name)
+    eval_and_log("two_moons", model, training_duration, X_test, y_test, run_dir)
 
 
 if __name__ == "__main__":
-    run_banknote()
-    run_two_moons()
+    test_run_dir = os.path.join(os.path.dirname(__file__), "..", "results", "test_run_classical")
+    os.makedirs(test_run_dir, exist_ok=True)
+    run_banknote(run_dir=test_run_dir)
+    run_two_moons(run_dir=test_run_dir)

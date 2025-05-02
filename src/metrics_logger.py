@@ -2,29 +2,23 @@ import os
 import json
 import csv
 
-def save_metrics(metrics, backend_name, results_dir='results'):
-    """
-    Saves metrics to a JSON file.
-    """
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
+# Modify save functions to accept run_dir
+def save_metrics(metrics: dict, backend_name: str, run_dir: str):
+    """Saves evaluation metrics to a JSON file within the specified run directory."""
+    fn = f"metrics_{backend_name}_{metrics['dataset']}.json"
+    path = os.path.join(run_dir, fn) # Use run_dir
+    print(f"[SAVE] Saving metrics to: {path}")
+    with open(path, "w") as f:
+        json.dump(metrics, f, indent=2)
 
-    dataset_name = metrics["dataset"]
-    file_path = os.path.join(results_dir, f'metrics_{dataset_name}_{backend_name}.json')
-    with open(file_path, 'w') as f:
-        json.dump(metrics, f, indent=4)
-
-def save_timing(training_duration, predicting_duration, backend_name, dataset_name, results_dir='results'):
-    """
-    Saves timing information to a CSV file.
-    """
-    if not os.path.exists(results_dir):
-        os.makedirs(results_dir)
-
-    timings_path = os.path.join(results_dir, 'timings.csv')
-    file_exists = os.path.isfile(timings_path)
-    with open(timings_path, 'a', newline='') as csvfile:
-        writer = csv.writer(csvfile)
-        if not file_exists:
-            writer.writerow(['dataset', 'backend', 'train_time_seconds', 'predict_time_seconds'])
-        writer.writerow([dataset_name, backend_name, training_duration, predicting_duration])
+def save_timing(train_s: float, predict_s: float, backend: str, dataset: str, run_dir: str):
+    """Appends timing info to timings.csv within the specified run directory."""
+    path = os.path.join(run_dir, "timings.csv") # Use run_dir
+    print(f"[SAVE] Saving timing to: {path}")
+    # file exists? write header only if it does not
+    hdr = not os.path.exists(path)
+    with open(path, "a", newline="") as f:
+        wrt = csv.writer(f)
+        if hdr:
+            wrt.writerow(["backend", "dataset", "train_time_seconds", "predict_time_seconds"])
+        wrt.writerow([backend, dataset, train_s, predict_s])
