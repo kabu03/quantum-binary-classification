@@ -10,7 +10,7 @@ QUANTUM_MODULE   = "src.quantum_svm"
 
 DATASETS         = ("banknote", "two_moons")
 # Define the quantum backends to test here
-QUANTUM_BACKENDS_TO_TEST = ["statevector", "qasm"] # Add more like "ibm_sherbrooke" if configured
+QUANTUM_BACKENDS_TO_TEST = ["ibm_sherbrooke"] # Options are "statevector", "qasm", "ibm_sherbrooke", "ibm_brisbane"
 
 MAX_BANKNOTE_SAMPLES = 1372 # Max samples in the banknote dataset
 MAX_TWO_MOONS_SAMPLES = 1500 # Max samples in the two_moons dataset
